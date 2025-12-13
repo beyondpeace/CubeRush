@@ -1,23 +1,13 @@
-// ScoreSystem.js — prototype-accurate scoring & distance
+// ScoreSystem.js — prototype-accurate scoring (engine-driven timing)
 import { GameState } from '../core/GameState.js';
 
-const DISTANCE_SCALE = 10.0;
-
 export const ScoreSystem = {
-    update(now) {
-        if (GameState.lastFrameTime == null) {
-            GameState.lastFrameTime = now;
-        }
+    update() {
+        // Engine already updates accumulatedDistance
+        const distance = GameState.accumulatedDistance || 0;
 
-        const dtSec = (now - GameState.lastFrameTime) / 1000;
-        GameState.lastFrameTime = now;
-        if (dtSec <= 0) return;
-
-        // Distance & score exactly like prototype
-        const d = GameState.cubeSpeed * DISTANCE_SCALE * dtSec;
-        GameState.accumulatedDistance += d;
-
-        GameState.score = GameState.accumulatedDistance * 0.85;
+        // Prototype scoring curve
+        GameState.score = distance * 0.85;
 
         if (GameState.scoreDisplay) {
             GameState.scoreDisplay.textContent =
@@ -26,7 +16,7 @@ export const ScoreSystem = {
 
         // Level manager update
         if (GameState.LevelManager && GameState.LevelManager.update) {
-            GameState.LevelManager.update(GameState.accumulatedDistance);
+            GameState.LevelManager.update(distance);
         }
     }
 };
