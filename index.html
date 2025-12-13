@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>CubeRush Modular</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<!-- SPLASH SCREEN -->
+<div id="splash">
+    <img id="logo" src="assets/unverse_logo.png" alt="Unverse Logo">
+    <div id="loading-text">Loading...</div>
+</div>
+
+
+    <!-- HUD -->
+    <div id="scoreDisplay">Score: 0</div>
+    <div id="fadeOverlay"></div>
+
+    <!-- GAME OVER PANEL -->
+    <div id="gameover">
+        <div id="go-text">GAME OVER</div>
+        <div id="go-score">Score: 0</div>
+        <div id="go-hint">Press SPACE to Restart</div>
+    </div>
+
+    <!-- GAME SCRIPT (LOAD LAST!) -->
+    <script type="module" src="src/main.js"></script>
+
+</body>
+</html>
