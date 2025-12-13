@@ -1,4 +1,4 @@
-// src/ui/Splash.js — Robust, prototype-accurate startup (replace your file)
+// src/ui/Splash.js — Robust, prototype-accurate startup (SAFE LOCKED VERSION)
 import { GameState } from "../core/GameState.js";
 import { initScene } from "../core/Scene.js";
 import { initInput } from "../core/Input.js";
@@ -14,37 +14,39 @@ export const Splash = {
   SPLASH_DURATION: 1800,
   SPLASH_FADE: 400,
 
-  // guard to prevent re-entrancy
+  // 🔒 lifecycle guards
   _isPlaying: false,
+  _hasStarted: false,
 
   initDOM() {
     this.splashEl = document.getElementById("splash");
     this.logoEl = document.getElementById("logo");
 
-    // defensive fallbacks
     if (!this.splashEl) {
       console.warn("Splash.initDOM: #splash not found");
       this.splashEl = { style: {} };
     }
     if (!this.logoEl) {
       console.warn("Splash.initDOM: #logo not found");
-      this.logoEl = { style: {} , offsetWidth: 0};
+      this.logoEl = { style: {}, offsetWidth: 0 };
     }
   },
 
   play(isRestart = false) {
-    if (this._isPlaying) return; // PROTOTYPE: do not re-run splash while already playing
+    // 🔒 Absolute guards
+    if (this._isPlaying) return;
+    if (this._hasStarted && !isRestart) return;
+
     this._isPlaying = true;
 
     if (!this.splashEl || !this.logoEl) this.initDOM();
 
-    // Block input while splash is active
     GameState.splashActive = true;
 
     const splash = this.splashEl;
     const logo = this.logoEl;
 
-    // When restarting, hide gameover and overlay first (prototype behaviour)
+    // On restart, hide game over panels first
     if (isRestart) {
       const goPanel = document.getElementById("gameover");
       const fadeOverlay = document.getElementById("fadeOverlay");
@@ -52,16 +54,15 @@ export const Splash = {
       if (fadeOverlay) fadeOverlay.style.opacity = 0;
     }
 
-    // show splash
+    // Show splash
     try {
       splash.style.display = "flex";
       splash.style.opacity = 1;
     } catch (e) {
-      // defensive in case DOM is missing
-      console.warn("Splash.play: could not show splash DOM", e);
+      console.warn("Splash.play: splash DOM issue", e);
     }
 
-    // restart animation exactly like prototype
+    // Restart logo animation (prototype parity)
     try {
       logo.style.animation = "none";
       void logo.offsetWidth;
@@ -70,13 +71,13 @@ export const Splash = {
       console.warn("Splash.play: logo animation issue", e);
     }
 
-    // schedule fade out after reveal
+    // Fade out after reveal
     setTimeout(() => {
       try {
         splash.style.transition = `opacity ${this.SPLASH_FADE}ms ease`;
         splash.style.opacity = 0;
       } catch (e) {
-        console.warn("Splash.play: fade out issue", e);
+        console.warn("Splash.play: fade issue", e);
       }
 
       setTimeout(() => {
@@ -96,77 +97,66 @@ export const Splash = {
   },
 
   firstStart() {
-    // CORRECT SAFE STARTUP ORDER:
-    // 1) Input (sets key flags so UI/scene can safely bind)
-    // 2) LevelSystem.init() (must be ready before cubes spawn)
-    // 3) Scene (spawns cubes using level info)
-    // 4) HUD (requires scene/UI elements present)
-    // 5) Engine.startGameLoop()
+    // 🔒 Mark game as started forever (page lifetime)
+    this._hasStarted = true;
 
-    try {
-      initInput();
-    } catch (e) {
-      console.error("Splash.firstStart: initInput() failed", e);
-    }
+    // SAFE START ORDER (do not change)
+    try { initInput(); } 
+    catch (e) { console.error("Splash.firstStart: initInput failed", e); }
 
     try {
       if (typeof LevelSystem.init === "function") {
         LevelSystem.init();
-      } else {
-        console.warn("LevelSystem.init() not found or not a function");
       }
     } catch (e) {
-      console.error("Splash.firstStart: LevelSystem.init() failed", e);
+      console.error("Splash.firstStart: LevelSystem.init failed", e);
     }
 
-    try {
-      initScene();
-    } catch (e) {
-      console.error("Splash.firstStart: initScene() failed", e);
-    }
+    try { initScene(); } 
+    catch (e) { console.error("Splash.firstStart: initScene failed", e); }
+
+    try { HUD.init(); } 
+    catch (e) { console.error("Splash.firstStart: HUD.init failed", e); }
 
     try {
-      HUD.init();
-    } catch (e) {
-      console.error("Splash.firstStart: HUD.init() failed", e);
-    }
-
-    try {
-      // true -> firstStart indicates a fresh start
       Engine.startGameLoop(true);
     } catch (e) {
-      console.error("Splash.firstStart: Engine.startGameLoop() failed", e);
+      console.error("Splash.firstStart: Engine.startGameLoop failed", e);
     }
 
-    // allow input a moment after fade
-    setTimeout(() => {
+    // 🔒 Release splash lock on next frame (engine-safe)
+    requestAnimationFrame(() => {
       GameState.splashActive = false;
       this._isPlaying = false;
-    }, 120);
+    });
   },
 
   restartGame() {
     try {
-      // false -> restart flow (Engine should not re-initialize some singletons)
       Engine.startGameLoop(false);
     } catch (e) {
       console.error("Splash.restartGame: Engine.startGameLoop failed", e);
     }
 
-    setTimeout(() => {
+    requestAnimationFrame(() => {
       GameState.splashActive = false;
       this._isPlaying = false;
-    }, 120);
+    });
   }
 };
 
-// global quick-access (keeps parity with prototype)
+// 🔒 Controlled global access (kept for prototype parity)
 window.playSplash = function (isRestart = false) {
   Splash.play(isRestart);
 };
 
-// auto-start splash on page load (same timings as prototype)
+// 🔒 Auto-start splash exactly ONCE per page load
+let splashBooted = false;
+
 window.addEventListener("load", () => {
+  if (splashBooted) return;
+  splashBooted = true;
+
   setTimeout(() => {
     Splash.play(false);
   }, Splash.SPLASH_PREDELAY);
