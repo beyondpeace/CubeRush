@@ -145,12 +145,12 @@ export const Splash = {
   }
 };
 
-// 🔒 Controlled global access (kept for prototype parity)
+// Controlled global access (kept for prototype parity)
 window.playSplash = function (isRestart = false) {
   Splash.play(isRestart);
 };
 
-// 🔒 Auto-start splash exactly ONCE per page load
+// Auto-start splash exactly ONCE per page load
 let splashBooted = false;
 
 window.addEventListener("load", () => {
