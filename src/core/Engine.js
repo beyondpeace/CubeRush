@@ -1,7 +1,8 @@
 // core/Engine.js
 /**
  * FRAME-BASED engine (prototype accurate)
- * Centralized reset logic + safe restart (A3)
+ * Correct collision ordering + restart determinism
+ * FPS-compensated for battery / throttled devices
  */
 
 import { GameState } from "./GameState.js";
@@ -10,14 +11,11 @@ import { CubeSystem } from "../systems/CubeSystem.js";
 import { ScoreSystem } from "../systems/ScoreSystem.js";
 import { GameOverUI } from "../ui/GameOver.js";
 
-// --- Core constants ---
 const INITIAL_CUBE_SPEED = 0.32;
 const FOG_BASE = 0.0006;
 const FOG_SCALE = 0.0000009;
 const MAX_CUBE_SPEED = 3.9;
 const CAMERA_BASE_Y = 6;
-
-// Distance tuning (locked)
 const DISTANCE_SCALE = 0.14;
 
 export const Engine = {
@@ -31,20 +29,24 @@ export const Engine = {
     const now = performance.now();
 
     if (!isInitial) {
-      // 🔒 Centralized numeric reset
+      // 1. Reset level progression FIRST
+      if (GameState.LevelManager?.reset) {
+        GameState.LevelManager.reset();
+      }
+
+      // 2. Reset numeric runtime state
       GameState.resetRuntimeState();
 
-      // 🔒 Reset UI state
+      // 3. Reset UI
       GameOverUI.resetForRestart();
 
-      // 🔒 CRITICAL: reset cube world positions
-      if (GameState.cubes && GameState.cubes.length) {
+      // 4. Respawn cubes using level 1 state
+      if (GameState.cubes?.length) {
         for (const cube of GameState.cubes) {
           CubeSystem.spawnCube(cube);
         }
       }
     } else {
-      // First start safety
       GameState.lastFrameTime = now;
       GameState.lastComboTime = now;
       GameState.cubeSpeed = INITIAL_CUBE_SPEED;
@@ -57,7 +59,15 @@ export const Engine = {
   animate: (now) => {
     const delta = Math.min(32, now - (GameState.lastFrameTime || now));
     GameState.lastFrameTime = now;
-    const dt = delta / 16.666;
+
+    // Base dt normalized to 60 FPS
+    let dt = delta / 16.666;
+
+    // 🔒 FPS COMPENSATION (battery / throttled devices)
+    const fps = 1000 / delta;
+    if (fps < 50) {
+      dt *= 50 / fps;
+    }
 
     if (GameState.gameOver) {
       Engine._loopStarted = false;
@@ -68,16 +78,14 @@ export const Engine = {
       return;
     }
 
-    // Score & progression
-    ScoreSystem.update();
-
-    // Player movement
+    // Movement & visuals first
     Engine.updateMovement(dt);
     Engine.updateBikeVisuals(dt);
 
-    // World update & collision
+    // COLLISION CHECK FIRST (CRITICAL)
     const hit = CubeSystem.updateAll(now);
     if (hit?.hit) {
+      GameState.gameOver = true;
       GameState.cubeSpeed = 0;
       GameOverUI.trigger();
 
@@ -89,6 +97,8 @@ export const Engine = {
       return;
     }
 
+    // ONLY now allow progression
+    ScoreSystem.update();
     Engine.updateCameraAndWorld(now, dt);
 
     GameState.renderer?.render(GameState.scene, GameState.camera);
@@ -119,13 +129,8 @@ export const Engine = {
 
   updateBikeVisuals(dt) {
     GameState.wheelRot -= 0.25 * dt;
-
-    if (GameState.rearTyre) {
-      GameState.rearTyre.rotation.x = GameState.wheelRot;
-    }
-    if (GameState.frontTyre) {
-      GameState.frontTyre.rotation.x = GameState.wheelRot * 1.1;
-    }
+    if (GameState.rearTyre) GameState.rearTyre.rotation.x = GameState.wheelRot;
+    if (GameState.frontTyre) GameState.frontTyre.rotation.x = GameState.wheelRot * 1.1;
 
     BikeSystem.updateRims();
     BikeSystem.updateTailLamps();
@@ -137,17 +142,15 @@ export const Engine = {
     const bike = GameState.bike;
     if (!camera || !scene || !bike) return;
 
-    const bikeX = GameState.bikeX;
     let cubeSpeed = GameState.cubeSpeed;
 
-    // 🔒 Authoritative distance progression
     GameState.accumulatedDistance += cubeSpeed * dt * DISTANCE_SCALE;
 
     const speedFactor = Math.min(2.5, cubeSpeed);
     const breathingAmp = cubeSpeed > 1.3 ? 0.18 : 0.0;
 
     camera.position.set(
-      bikeX,
+      GameState.bikeX,
       CAMERA_BASE_Y + Math.sin(now * 0.001 * speedFactor) * breathingAmp,
       14
     );
@@ -159,7 +162,6 @@ export const Engine = {
         FOG_BASE + GameState.accumulatedDistance * FOG_SCALE;
     }
 
-    // Speed ramp
     cubeSpeed +=
       (0.00003 + GameState.accumulatedDistance * 0.00000012) * dt;
 
