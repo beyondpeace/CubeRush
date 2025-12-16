@@ -196,3 +196,18 @@ export function initScene() {
     originalRender(scene, camera);
   };
 }
+
+// Reset grid visual state on restart
+export function resetGrid() {
+  if (!GameState.grid || !GameState.grid.material) return;
+
+  const uniforms = GameState.grid.material.uniforms;
+
+  if (uniforms?.gridOffsetZ) {
+    uniforms.gridOffsetZ.value = 0;
+  }
+
+  if (uniforms?.opacity) {
+    uniforms.opacity.value = GRID_OPACITY_BASE;
+  }
+}

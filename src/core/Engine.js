@@ -10,6 +10,7 @@ import { BikeSystem } from "../systems/BikeSystem.js";
 import { CubeSystem } from "../systems/CubeSystem.js";
 import { ScoreSystem } from "../systems/ScoreSystem.js";
 import { GameOverUI } from "../ui/GameOver.js";
+import { resetGrid } from "./Scene.js"; // ✅ ADD THIS
 
 const INITIAL_CUBE_SPEED = 0.32;
 const FOG_BASE = 0.0006;
@@ -40,7 +41,10 @@ export const Engine = {
       // 3. Reset UI
       GameOverUI.resetForRestart();
 
-      // 4. Respawn cubes using level 1 state
+      // ✅ 4. RESET GRID VISUAL STATE
+      resetGrid();
+
+      // 5. Respawn cubes using level 1 state
       if (GameState.cubes?.length) {
         for (const cube of GameState.cubes) {
           CubeSystem.spawnCube(cube);
@@ -60,10 +64,9 @@ export const Engine = {
     const delta = Math.min(32, now - (GameState.lastFrameTime || now));
     GameState.lastFrameTime = now;
 
-    // Base dt normalized to 60 FPS
     let dt = delta / 16.666;
 
-    // 🔒 FPS COMPENSATION (battery / throttled devices)
+    // FPS compensation
     const fps = 1000 / delta;
     if (fps < 50) {
       dt *= 50 / fps;
@@ -78,11 +81,9 @@ export const Engine = {
       return;
     }
 
-    // Movement & visuals first
     Engine.updateMovement(dt);
     Engine.updateBikeVisuals(dt);
 
-    // COLLISION CHECK FIRST (CRITICAL)
     const hit = CubeSystem.updateAll(now);
     if (hit?.hit) {
       GameState.gameOver = true;
@@ -97,7 +98,6 @@ export const Engine = {
       return;
     }
 
-    // ONLY now allow progression
     ScoreSystem.update();
     Engine.updateCameraAndWorld(now, dt);
 

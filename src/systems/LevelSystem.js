@@ -1,4 +1,9 @@
-// LevelSystem.js — prototype-accurate level manager (restart-safe)
+// systems/LevelSystem.js
+/**
+ * Prototype-accurate level manager
+ * Option B: Slightly tighter spacing for better tension
+ */
+
 import { GameState } from "../core/GameState.js";
 
 const LEVEL_THRESHOLDS = [0, 120, 320, 620, 980, 1500];
@@ -6,12 +11,54 @@ const LEVEL_THRESHOLDS = [0, 120, 320, 620, 980, 1500];
 export const LevelSystem = {
 
   levels: [
-    { name: "Level 1 - Open",    color: null,      ambient: 0x00ccff, speedTarget: 0.36, cubeCount: 550, spacing: 20 },
-    { name: "Level 2 - Blue",    color: 0x00ffff,  ambient: 0x00ffee, speedTarget: 0.56, cubeCount: 650, spacing: 18 },
-    { name: "Level 3 - Magenta", color: 0xff00ff,  ambient: 0xcc33ff, speedTarget: 0.84, cubeCount: 750, spacing: 16 },
-    { name: "Level 4 - Orange",  color: 0xff8800,  ambient: 0xffbb66, speedTarget: 1.14, cubeCount: 850, spacing: 14 },
-    { name: "Level 5 - Pink",    color: 0xff3399,  ambient: 0xff6699, speedTarget: 1.45, cubeCount: 950, spacing: 12 },
-    { name: "Endless",           color: 0xffee88,  ambient: 0xffffff, speedTarget: 2.0,  cubeCount: 1100, spacing: 10 }
+    {
+      name: "Level 1 - Open",
+      color: null,
+      ambient: 0x00ccff,
+      speedTarget: 0.36,
+      cubeCount: 550,
+      spacing: 18
+    },
+    {
+      name: "Level 2 - Blue",
+      color: 0x00ffff,
+      ambient: 0x00ffee,
+      speedTarget: 0.56,
+      cubeCount: 650,
+      spacing: 16
+    },
+    {
+      name: "Level 3 - Magenta",
+      color: 0xff00ff,
+      ambient: 0xcc33ff,
+      speedTarget: 0.84,
+      cubeCount: 750,
+      spacing: 14
+    },
+    {
+      name: "Level 4 - Orange",
+      color: 0xff8800,
+      ambient: 0xffbb66,
+      speedTarget: 1.14,
+      cubeCount: 850,
+      spacing: 12
+    },
+    {
+      name: "Level 5 - Pink",
+      color: 0xff3399,
+      ambient: 0xff6699,
+      speedTarget: 1.45,
+      cubeCount: 950,
+      spacing: 10
+    },
+    {
+      name: "Endless",
+      color: 0xffee88,
+      ambient: 0xffffff,
+      speedTarget: 2.0,
+      cubeCount: 1100,
+      spacing: 9
+    }
   ],
 
   idx: 0,
@@ -22,11 +69,11 @@ export const LevelSystem = {
   init() {
     this.reset();
     GameState.LevelManager = this;
+    console.log("LevelSystem initialized");
   },
 
   reset() {
     this.idx = 0;
-
     const L0 = this.levels[0];
     this.targetSpeed = L0.speedTarget;
     this.targetColorHex = L0.color;
@@ -43,8 +90,8 @@ export const LevelSystem = {
 
   applyLevel(i) {
     this.idx = i;
-
     const L = this.current();
+
     this.targetSpeed = L.speedTarget;
     this.targetColorHex = L.color;
     this.targetCount = L.cubeCount;
@@ -52,12 +99,11 @@ export const LevelSystem = {
     if (GameState.ambient) {
       GameState.ambient.color.setHex(L.ambient);
     }
+
+    console.log("LEVEL UP:", i, L.name);
   },
 
   update(distance) {
-    // IMPORTANT: do nothing if game is already over
-    if (GameState.gameOver) return;
-
     for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
       if (distance >= LEVEL_THRESHOLDS[i]) {
         if (this.idx !== i) {
