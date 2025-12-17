@@ -17,7 +17,7 @@ export const LevelSystem = {
       ambient: 0x00ccff,
       speedTarget: 0.36,
       cubeCount: 550,
-      spacing: 18
+      spacing: 13
     },
     {
       name: "Level 2 - Blue",
@@ -25,7 +25,7 @@ export const LevelSystem = {
       ambient: 0x00ffee,
       speedTarget: 0.56,
       cubeCount: 650,
-      spacing: 16
+      spacing: 11
     },
     {
       name: "Level 3 - Magenta",
@@ -33,7 +33,7 @@ export const LevelSystem = {
       ambient: 0xcc33ff,
       speedTarget: 0.84,
       cubeCount: 750,
-      spacing: 14
+      spacing:10
     },
     {
       name: "Level 4 - Orange",
@@ -41,7 +41,7 @@ export const LevelSystem = {
       ambient: 0xffbb66,
       speedTarget: 1.14,
       cubeCount: 850,
-      spacing: 12
+      spacing: 10
     },
     {
       name: "Level 5 - Pink",
@@ -49,7 +49,7 @@ export const LevelSystem = {
       ambient: 0xff6699,
       speedTarget: 1.45,
       cubeCount: 950,
-      spacing: 10
+      spacing: 9
     },
     {
       name: "Endless",
@@ -57,7 +57,7 @@ export const LevelSystem = {
       ambient: 0xffffff,
       speedTarget: 2.0,
       cubeCount: 1100,
-      spacing: 9
+      spacing: 8
     }
   ],
 
