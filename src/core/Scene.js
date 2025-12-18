@@ -13,36 +13,28 @@ import { CubeSystem } from "../systems/CubeSystem.js";
 import { BikeSystem } from "../systems/BikeSystem.js";
 
 /* ======================================================
-   🔧 GRID & FLOOR TUNING CONTROLS (EDIT THESE ONLY)
+   GRID & FLOOR TUNING CONTROLS
 ====================================================== */
-
-// Grid appearance
 const GRID_SCALE = 1080.0;
 const GRID_LINE_WIDTH = 0.018;
 
-// Speed-based fade
 const GRID_OPACITY_BASE = 0.25;
 const GRID_OPACITY_MIN  = 0.12;
 const GRID_FADE_SPEED   = 1.6;
 
-// Z-direction grid motion
 const GRID_SCROLL_SPEED = 0.15;
 const GRID_SCROLL_SCALE = 0.6;
 
-// Lane highlighting
-const LANE_SPACING  = 1.0;    // grid cells per lane
-const LANE_INTENSITY = 0.25;  // brightness boost
-const LANE_SOFTNESS  = 0.18;  // blend smoothness
+const LANE_SPACING   = 1.0;
+const LANE_INTENSITY = 0.25;
+const LANE_SOFTNESS  = 0.18;
 
-// Colors
-const GRID_COLOR = 0x00ffff;
+const GRID_COLOR    = 0x00ffff;
 const GRID_BG_COLOR = 0x001420;
 
-// Floor placement & size
 const FLOOR_SIZE = 4000;
 const FLOOR_Y = -0.15;
 
-// Camera defaults
 const CAMERA_Y = 6;
 const CAMERA_Z = 14;
 
@@ -61,6 +53,18 @@ function handleResize() {
 ====================================================== */
 export function initScene() {
 
+  /* 🔒 GAME CONTAINER (HIDDEN UNTIL PLAY) */
+  let gameContainer = document.getElementById("game-container");
+  if (!gameContainer) {
+    gameContainer = document.createElement("div");
+    gameContainer.id = "game-container";
+    gameContainer.style.position = "fixed";
+    gameContainer.style.inset = "0";
+    gameContainer.style.visibility = "hidden";
+    gameContainer.style.pointerEvents = "none";
+    document.body.appendChild(gameContainer);
+  }
+
   const scene = new THREE.Scene();
   scene.fog = new THREE.FogExp2(0x000000, 0.0006);
 
@@ -76,12 +80,13 @@ export function initScene() {
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setClearColor(0x000000);
   renderer.setPixelRatio(window.devicePixelRatio || 1);
-  document.body.appendChild(renderer.domElement);
-  setTimeout(handleResize, 0);
+
+  gameContainer.appendChild(renderer.domElement);
 
   GameState.scene = scene;
   GameState.camera = camera;
   GameState.renderer = renderer;
+  GameState.gameContainer = gameContainer;
 
   scene.add(new THREE.AmbientLight(0x00ffff, 0.3));
 
@@ -89,9 +94,7 @@ export function initScene() {
   point.position.set(0, 60, 80);
   scene.add(point);
 
-  /* ======================================================
-     PROCEDURAL GRID FLOOR (FADE + Z-MOTION + LANES)
-  ===================================================== */
+  /* ================= GRID FLOOR ================= */
   const floorMaterial = new THREE.ShaderMaterial({
     transparent: true,
     depthWrite: false,
@@ -166,15 +169,15 @@ export function initScene() {
   window.addEventListener("resize", handleResize);
   handleResize();
 
-  /* ======================================================
-     GRID UPDATE LOOP (FADE + Z-FLOW)
-  ===================================================== */
-  function updateGridVisuals() {
-    if (!GameState.grid || !GameState.grid.material) return;
+  const originalRender = renderer.render.bind(renderer);
+  renderer.render = function (scene, camera) {
+    updateGridVisuals();
+    originalRender(scene, camera);
+  };
 
+  function updateGridVisuals() {
     const speed = GameState.cubeSpeed || 0;
 
-    // Fade
     const fade =
       GRID_OPACITY_BASE -
       Math.min(1, speed / GRID_FADE_SPEED) *
@@ -182,22 +185,17 @@ export function initScene() {
 
     GameState.grid.material.uniforms.opacity.value = fade;
 
-    // Z-flow
     const scroll =
       GRID_SCROLL_SPEED +
       speed * GRID_SCROLL_SCALE * 0.01;
 
     GameState.grid.material.uniforms.gridOffsetZ.value += scroll;
   }
-
-  const originalRender = renderer.render.bind(renderer);
-  renderer.render = function (scene, camera) {
-    updateGridVisuals();
-    originalRender(scene, camera);
-  };
 }
 
-// Reset grid visual state on restart
+/* ======================================================
+   RESET GRID (REQUIRED BY ENGINE)
+====================================================== */
 export function resetGrid() {
   if (!GameState.grid || !GameState.grid.material) return;
 

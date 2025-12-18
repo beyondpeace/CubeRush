@@ -14,20 +14,27 @@
     <div id="loading-text">Loading...</div>
 </div>
 
+<!-- HARD GAME COVER (PREVENTS ANY GAME FLASH) -->
+<div id="game-cover"></div>
 
-    <!-- HUD -->
-    <div id="scoreDisplay">Score: 0</div>
-    <div id="fadeOverlay"></div>
+<!-- HUD -->
+<div id="scoreDisplay">Score: 0</div>
+<div id="fadeOverlay"></div>
 
-    <!-- GAME OVER PANEL -->
-    <div id="gameover">
-        <div id="go-text">GAME OVER</div>
-        <div id="go-score">Score: 0</div>
-        <div id="go-hint">Press SPACE to Restart</div>
-    </div>
+<!-- GAME OVER PANEL -->
+<div id="gameover">
+    <div id="go-text">GAME OVER</div>
+    <div id="go-score">Score: 0</div>
+    <div id="go-hint">Press SPACE to Restart</div>
+</div>
 
-    <!-- GAME SCRIPT (LOAD LAST!) -->
-    <script type="module" src="src/main.js"></script>
+<!-- TRANSITION FLASH -->
+<div id="transition-flash">
+  <div class="countdown-text">3</div>
+</div>
+
+<!-- GAME SCRIPT (LOAD LAST!) -->
+<script type="module" src="src/main.js"></script>
 
 </body>
 </html>

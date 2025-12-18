@@ -1,10 +1,15 @@
-// src/ui/Splash.js — Robust, prototype-accurate startup (SAFE LOCKED VERSION)
+// src/ui/Splash.js
+// 🚨 PRODUCTION BASE LOCK 🚨
+// Splash → Start Screen → Gameplay / Restart-safe
+
 import { GameState } from "../core/GameState.js";
 import { initScene } from "../core/Scene.js";
 import { initInput } from "../core/Input.js";
 import { LevelSystem } from "../systems/LevelSystem.js";
 import { HUD } from "./HUD.js";
 import { Engine } from "../core/Engine.js";
+import { StartScreen } from "../addons/StartScreen.js";
+import { HowToPlay } from "../addons/HowToPlay.js";
 
 export const Splash = {
   splashEl: null,
@@ -18,6 +23,9 @@ export const Splash = {
   _isPlaying: false,
   _hasStarted: false,
 
+  /* =========================
+     DOM INIT
+  ========================= */
   initDOM() {
     this.splashEl = document.getElementById("splash");
     this.logoEl = document.getElementById("logo");
@@ -26,19 +34,21 @@ export const Splash = {
       console.warn("Splash.initDOM: #splash not found");
       this.splashEl = { style: {} };
     }
+
     if (!this.logoEl) {
       console.warn("Splash.initDOM: #logo not found");
       this.logoEl = { style: {}, offsetWidth: 0 };
     }
   },
 
+  /* =========================
+     PLAY SPLASH
+  ========================= */
   play(isRestart = false) {
-    // 🔒 Absolute guards
     if (this._isPlaying) return;
     if (this._hasStarted && !isRestart) return;
 
     this._isPlaying = true;
-
     if (!this.splashEl || !this.logoEl) this.initDOM();
 
     GameState.splashActive = true;
@@ -46,7 +56,7 @@ export const Splash = {
     const splash = this.splashEl;
     const logo = this.logoEl;
 
-    // On restart, hide game over panels first
+    /* ---- Restart cleanup ---- */
     if (isRestart) {
       const goPanel = document.getElementById("gameover");
       const fadeOverlay = document.getElementById("fadeOverlay");
@@ -54,37 +64,23 @@ export const Splash = {
       if (fadeOverlay) fadeOverlay.style.opacity = 0;
     }
 
-    // Show splash
-    try {
-      splash.style.display = "flex";
-      splash.style.opacity = 1;
-    } catch (e) {
-      console.warn("Splash.play: splash DOM issue", e);
-    }
+    /* ---- Show splash ---- */
+    splash.style.display = "flex";
+    splash.style.opacity = 1;
 
-    // Restart logo animation (prototype parity)
-    try {
-      logo.style.animation = "none";
-      void logo.offsetWidth;
-      logo.style.animation = `fillLogo ${this.SPLASH_DURATION}ms linear forwards`;
-    } catch (e) {
-      console.warn("Splash.play: logo animation issue", e);
-    }
+    /* ---- Restart logo animation ---- */
+    logo.style.animation = "none";
+    void logo.offsetWidth;
+    logo.style.animation = `fillLogo ${this.SPLASH_DURATION}ms linear forwards`;
 
-    // Fade out after reveal
+    /* ---- Fade out splash ---- */
     setTimeout(() => {
-      try {
-        splash.style.transition = `opacity ${this.SPLASH_FADE}ms ease`;
-        splash.style.opacity = 0;
-      } catch (e) {
-        console.warn("Splash.play: fade issue", e);
-      }
+      splash.style.transition = `opacity ${this.SPLASH_FADE}ms ease`;
+      splash.style.opacity = 0;
 
       setTimeout(() => {
-        try {
-          splash.style.display = "none";
-          splash.style.transition = "";
-        } catch (e) { /* ignore */ }
+        splash.style.display = "none";
+        splash.style.transition = "";
 
         if (!isRestart) {
           this.firstStart();
@@ -96,12 +92,14 @@ export const Splash = {
     }, this.SPLASH_DURATION);
   },
 
+  /* =========================
+     FIRST START (BOOT)
+  ========================= */
   firstStart() {
-    // 🔒 Mark game as started forever (page lifetime)
     this._hasStarted = true;
 
-    // SAFE START ORDER (do not change)
-    try { initInput(); } 
+    // 🔒 INIT ONLY (NO GAME LOOP)
+    try { initInput(); }
     catch (e) { console.error("Splash.firstStart: initInput failed", e); }
 
     try {
@@ -112,26 +110,74 @@ export const Splash = {
       console.error("Splash.firstStart: LevelSystem.init failed", e);
     }
 
-    try { initScene(); } 
+    try { initScene(); }
     catch (e) { console.error("Splash.firstStart: initScene failed", e); }
 
-    try { HUD.init(); } 
+    try { HUD.init(); }
     catch (e) { console.error("Splash.firstStart: HUD.init failed", e); }
 
-    try {
-      Engine.startGameLoop(true);
-    } catch (e) {
-      console.error("Splash.firstStart: Engine.startGameLoop failed", e);
-    }
+    /* ---- SHOW START SCREEN ---- */
+    StartScreen.show({
+            onStart: () => {
+            const cover = document.getElementById("game-cover");
+            const flash = document.getElementById("transition-flash");
+            const text = flash?.querySelector(".countdown-text");
 
-    // 🔒 Release splash lock on next frame (engine-safe)
+            const container = GameState.gameContainer;
+            if (container) {
+              container.style.visibility = "visible";
+              container.style.pointerEvents = "auto";
+            }
+
+            if (!flash || !text) {
+              if (cover) cover.classList.add("hidden");
+              Engine.startGameLoop(true);
+              return;
+            }
+
+            flash.classList.add("active");
+
+            text.textContent = "3";
+
+            setTimeout(() => {
+              text.textContent = "2";
+            }, 1000);
+
+            setTimeout(() => {
+              text.textContent = "1";
+            }, 2000);
+
+            setTimeout(() => {
+              text.textContent = "GET READY TO RUSH!";
+            }, 3000);
+
+            setTimeout(() => {
+              flash.classList.remove("active");
+              if (cover) cover.classList.add("hidden");
+              Engine.startGameLoop(true);
+            }, 4200);
+          },
+
+
+
+      onHowToPlay: () => {
+        HowToPlay.show();
+      }
+    });
+
+    /* ---- Release splash lock ---- */
     requestAnimationFrame(() => {
       GameState.splashActive = false;
       this._isPlaying = false;
     });
   },
 
+  /* =========================
+     RESTART GAME
+  ========================= */
   restartGame() {
+    // 🔒 On restart, game-cover is already hidden
+
     try {
       Engine.startGameLoop(false);
     } catch (e) {
@@ -145,12 +191,16 @@ export const Splash = {
   }
 };
 
-// Controlled global access (kept for prototype parity)
+/* =========================
+   PROTOTYPE PARITY HOOK
+========================= */
 window.playSplash = function (isRestart = false) {
   Splash.play(isRestart);
 };
 
-// Auto-start splash exactly ONCE per page load
+/* =========================
+   AUTO BOOT (ONCE)
+========================= */
 let splashBooted = false;
 
 window.addEventListener("load", () => {
