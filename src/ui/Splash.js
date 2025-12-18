@@ -10,6 +10,7 @@ import { HUD } from "./HUD.js";
 import { Engine } from "../core/Engine.js";
 import { StartScreen } from "../addons/StartScreen.js";
 import { HowToPlay } from "../addons/HowToPlay.js";
+import { playTransition } from "../ui/Transition.js"; // ✅ NEW (ONLY ADDITION)
 
 export const Splash = {
   splashEl: null,
@@ -118,47 +119,21 @@ export const Splash = {
 
     /* ---- SHOW START SCREEN ---- */
     StartScreen.show({
-            onStart: () => {
-            const cover = document.getElementById("game-cover");
-            const flash = document.getElementById("transition-flash");
-            const text = flash?.querySelector(".countdown-text");
+      onStart: () => {
+        const cover = document.getElementById("game-cover");
+        const container = GameState.gameContainer;
 
-            const container = GameState.gameContainer;
-            if (container) {
-              container.style.visibility = "visible";
-              container.style.pointerEvents = "auto";
-            }
+        if (container) {
+          container.style.visibility = "visible";
+          container.style.pointerEvents = "auto";
+        }
 
-            if (!flash || !text) {
-              if (cover) cover.classList.add("hidden");
-              Engine.startGameLoop(true);
-              return;
-            }
-
-            flash.classList.add("active");
-
-            text.textContent = "3";
-
-            setTimeout(() => {
-              text.textContent = "2";
-            }, 1000);
-
-            setTimeout(() => {
-              text.textContent = "1";
-            }, 2000);
-
-            setTimeout(() => {
-              text.textContent = "GET READY TO RUSH!";
-            }, 3000);
-
-            setTimeout(() => {
-              flash.classList.remove("active");
-              if (cover) cover.classList.add("hidden");
-              Engine.startGameLoop(true);
-            }, 4200);
-          },
-
-
+        // ✅ SINGLE SOURCE OF TRANSITION
+        playTransition(() => {
+          if (cover) cover.classList.add("hidden");
+          Engine.startGameLoop(true);
+        });
+      },
 
       onHowToPlay: () => {
         HowToPlay.show();
