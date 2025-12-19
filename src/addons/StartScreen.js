@@ -1,5 +1,4 @@
 import { createStartScreenUI } from "../ui/StartScreenUI.js";
-import { playTransition } from "../ui/Transition.js";
 
 export const StartScreen = {
     el: null,
@@ -45,10 +44,8 @@ export const StartScreen = {
                     cleanup();
                     this.hide();
 
-                    // ▶ PLAY TRANSITION, THEN START GAME
-                    playTransition(() => {
-                        onStart && onStart();
-                    });
+                    // ✅ SIGNAL SPLASH — NOTHING ELSE
+                    onStart && onStart();
                     return;
                 }
             }
