@@ -2,7 +2,7 @@
 // 🚨 PRODUCTION BASE LOCK 🚨
 // Splash → Start Screen → Gameplay (Transition is VISUAL ONLY)
 
-import { GameState } from "../core/GameState.js";
+import { GameState, GameStates } from "../core/GameState.js";
 import { initScene } from "../core/Scene.js";
 import { initInput } from "../core/Input.js";
 import { LevelSystem } from "../systems/LevelSystem.js";
@@ -94,6 +94,8 @@ export const Splash = {
         // 🔥 GAME STARTS IMMEDIATELY (NO BLOCKERS)
         cover?.classList.add("hidden");
         Engine.startGameLoop(true);
+        // 🔒 Phase 1: declare gameplay state
+        GameState.setState(GameStates.PLAYING);
 
         // 🎬 OPTIONAL TRANSITION (VISUAL ONLY)
         const flash = document.getElementById("transition-flash");

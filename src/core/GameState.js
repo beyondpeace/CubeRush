@@ -1,7 +1,27 @@
 // src/core/GameState.js
 // Centralized game state + authoritative reset contract
 
+// 🔒 Phase 1 – Game flow states (non-invasive)
+export const GameStates = {
+  BOOT: "BOOT",
+  PLAYING: "PLAYING",
+  GAME_OVER: "GAME_OVER"
+};
+
 export const GameState = {
+
+    // --- Game flow ---
+  state: GameStates.BOOT,
+
+  setState(next) {
+    if (this.state === next) return;
+    console.log(`[GameState] ${this.state} → ${next}`);
+    this.state = next;
+  },
+
+  getState() {
+    return this.state;
+  },
   // --- Three.js core ---
   scene: null,
   camera: null,
