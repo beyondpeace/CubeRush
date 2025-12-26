@@ -61,6 +61,11 @@ export const Engine = {
   },
 
   animate: (now) => {
+    if (GameState.getState() === "restart_transition") {
+  GameState.renderer?.render(GameState.scene, GameState.camera);
+  Engine._rafId = requestAnimationFrame(Engine.animate);
+  return;
+}
     const delta = Math.min(32, now - (GameState.lastFrameTime || now));
     GameState.lastFrameTime = now;
 

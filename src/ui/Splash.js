@@ -105,7 +105,7 @@ export const Splash = {
         //     flash.classList.remove("active");
         //   }, 2200);
         // }
-        Engine.startGame();
+        Engine.startGameLoop(true);
       },
 
       onHowToPlay: () => {

@@ -3,6 +3,8 @@
 
 import { GameState } from "./GameState.js";
 import { GameOverUI } from "../ui/GameOver.js";
+import { RestartTransition } from "../addons/RestartTransition.js";
+
 
 
 let inputAttached = false;
@@ -20,13 +22,10 @@ function onKeyDown(e) {
   } else if (e.code === "ArrowRight") {
     GameState.moveRight = true;
   } else if (e.code === "Space") {
-    // Restart only when game is over
-    if (GameState.gameOver && window.playSplash) {
-      // 🔒 Fully reset Game Over state BEFORE restart splash
-      GameOverUI.resetForRestart();
-      window.playSplash(true);
-    }
+  if (GameState.gameOver) {
+    RestartTransition.play();
   }
+}
 }
 
 function onKeyUp(e) {

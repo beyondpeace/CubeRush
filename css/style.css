@@ -180,10 +180,59 @@ canvas {
 }
 
 
+/* ================================
+   RESTART TRANSITION
+================================ */
 
-/* ==================================================
-   CUBE DEPTH — MAKE THEM REAL 3D CUBES
-================================================== */
+#restart-transition {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+#restart-transition.hidden {
+  display: none;
+}
+
+.rt-logo {
+  width: 180px;
+  filter: brightness(0) invert(1);
+}
+.rt-logo-mask {
+  width: 180px;
+  overflow: hidden;
+
+  /* splash-style mask */
+  clip-path: inset(0 100% 0 0);
+  animation: rtLogoReveal 1.3s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+.rt-text {
+  margin-top: 18px;
+  font-size: 24px;
+  letter-spacing: 10px;
+  color: #fff;
+
+  /* splash-style reveal */
+  clip-path: inset(0 100% 0 0);
+  animation: rtTextReveal 1.4s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+  animation-delay: 0.6s;
+}
+.rt-logo-wrap {
+  overflow: hidden;
+  width: 140px;
+}
+@keyframes rtLogoReveal {
+  to { clip-path: inset(0 0 0 0); }
+}
+@keyframes rtTextReveal {
+  to { clip-path: inset(0 0 0 0); }
+}
+
 
 
 

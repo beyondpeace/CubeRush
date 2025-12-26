@@ -5,7 +5,8 @@
 export const GameStates = {
   BOOT: "BOOT",
   PLAYING: "PLAYING",
-  GAME_OVER: "GAME_OVER"
+  GAME_OVER: "GAME_OVER",
+  RESTART_TRANSITION: "restart_transition",
 };
 
 export const GameState = {
@@ -116,5 +117,57 @@ export const GameState = {
     if (this.scoreDisplay) {
       this.scoreDisplay.textContent = "Score: 0";
     }
-  }
+  },
+
+    /**
+   * 🎯 Restart transition message based on last score
+   * Read-only helper (NO state mutation)
+   */
+  getRestartMessage(score) {
+  const s = score;
+
+  const messages = {
+    low: [
+      "Come on, let's try again!",
+      "Warm up round. You got this.",
+      "Every run makes you better.",
+      "Shake it off. Go again!"
+    ],
+    mid1: [
+      "Nice run!",
+      "Good reflexes.",
+      "You're getting the hang of it.",
+      "That was smooth."
+    ],
+    mid2: [
+      "Great speed!",
+      "Now that's momentum.",
+      "You're flying now.",
+      "Sharp moves!"
+    ],
+    high: [
+      "Rush mode!",
+      "Pure adrenaline!",
+      "You're unstoppable.",
+      "This is getting intense!"
+    ],
+    elite: [
+      "Legendary run!",
+      "CubeRush elite!",
+      "Absolute domination.",
+      "Built different."
+    ]
+  };
+
+  let pool;
+
+  if (s < 50) pool = messages.low;
+  else if (s < 150) pool = messages.mid1;
+  else if (s < 300) pool = messages.mid2;
+  else if (s < 500) pool = messages.high;
+  else pool = messages.elite;
+
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
 };
