@@ -42,7 +42,7 @@ export const GameOverUI = {
 
         // Restore bike
         if (GameState.bike) {
-            GameState.bike.visible = true;
+            GameState.bike.visible = false;
             GameState.bike.position.set(0, 1.2, 1.6);
             GameState.bike.rotation.set(0, 0, 0);
         }

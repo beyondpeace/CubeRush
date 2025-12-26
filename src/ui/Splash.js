@@ -98,13 +98,14 @@ export const Splash = {
         GameState.setState(GameStates.PLAYING);
 
         // 🎬 OPTIONAL TRANSITION (VISUAL ONLY)
-        const flash = document.getElementById("transition-flash");
-        if (flash) {
-          flash.classList.add("active");
-          setTimeout(() => {
-            flash.classList.remove("active");
-          }, 2200);
-        }
+        // const flash = document.getElementById("transition-flash");
+        // if (flash) {
+        //   flash.classList.add("active");
+        //   setTimeout(() => {
+        //     flash.classList.remove("active");
+        //   }, 2200);
+        // }
+        Engine.startGame();
       },
 
       onHowToPlay: () => {
@@ -122,13 +123,18 @@ export const Splash = {
      RESTART
   ========================= */
   restartGame() {
-    Engine.startGameLoop(false);
+  Engine.startGameLoop(false);
 
-    requestAnimationFrame(() => {
-      GameState.splashActive = false;
-      this._isPlaying = false;
-    });
-  }
+  requestAnimationFrame(() => {
+    // 🔓 Re-enable bike ONLY when gameplay resumes
+    if (GameState.bike) {
+      GameState.bike.visible = true;
+    }
+
+    GameState.splashActive = false;
+    this._isPlaying = false;
+  });
+}
 };
 
 /* =========================
