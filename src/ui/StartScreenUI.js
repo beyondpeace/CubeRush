@@ -35,6 +35,7 @@ export function createStartScreenUI() {
         .join("");
 
     container.innerHTML = `
+    
         <div class="cube-layer">
             ${cubesHTML}
         </div>
@@ -42,12 +43,21 @@ export function createStartScreenUI() {
         <div class="start-inner">
             <h1 class="game-title">CUBERUSH</h1>
             <p class="game-subtitle">Survive the Rush</p>
-
+           
             <div class="hold-wrapper">
+             <div class="player-name">
+                Alright. ! 
+                <span id="playerNameText"></span>,
+                <span id="editNameBtn">✎</span>
+            </div>
                 <div class="hold-instruction">HOLD SPACE TO START</div>
                 <div class="hold-progress">
                     <div class="hold-progress-fill">
-                        <div class="bike-indicator">🏍️</div>
+                        <img
+                            class="bike-indicator"
+                            src="assets/bike_progress.png"
+                            alt="Bike Progress"
+                        />
                     </div>
                 </div>
             </div>
@@ -59,6 +69,54 @@ export function createStartScreenUI() {
             </button>
         </div>
     `;
+        const nameText = container.querySelector("#playerNameText");
+const editBtn = container.querySelector("#editNameBtn");
+
+function getPlayerName() {
+    let name = localStorage.getItem("cuberush_player_name");
+    if (!name) {
+        name = "RIDER-" + Math.floor(100 + Math.random() * 900);
+        localStorage.setItem("cuberush_player_name", name);
+    }
+    return name;
+}
+
+nameText.innerText = getPlayerName();
+
+editBtn.onclick = () => {
+    const currentName = nameText.innerText;
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = currentName;
+    input.maxLength = 12;
+
+    input.className = "player-name-input";
+
+    nameText.replaceWith(input);
+    input.focus();
+    input.select();
+
+    const save = () => {
+        const newName = input.value.trim() || currentName;
+        localStorage.setItem("cuberush_player_name", newName);
+
+        nameText.innerText = newName;
+        input.replaceWith(nameText);
+    };
+
+    const cancel = () => {
+        input.replaceWith(nameText);
+    };
+
+    input.addEventListener("blur", save);
+
+    input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") save();
+        if (e.key === "Escape") cancel();
+    });
+};
+
 
     return container;
 }

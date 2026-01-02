@@ -1,7 +1,9 @@
 // HUD.js — 100% prototype-accurate UI fade logic
 import { GameState } from "../core/GameState.js";
+let highScore = Number(localStorage.getItem("cuberush_highscore")) || 0;
 
 export const HUD = {
+    
 
     init() {
         GameState.scoreDisplay = document.getElementById("scoreDisplay");
@@ -21,14 +23,28 @@ export const HUD = {
             GameState.fadeOverlay.style.opacity = 0;
             GameState.fadeOverlay.style.transition = "opacity 0.8s ease";
         }
+        HUD.deltaDisplay = document.createElement("div");
+        HUD.deltaDisplay.id = "deltaDisplay";
+        document.body.appendChild(HUD.deltaDisplay);
+
     },
 
     updateScore() {
+        const score = Math.floor(GameState.score);
+
         if (GameState.scoreDisplay) {
-            GameState.scoreDisplay.innerText =
-                "Score: " + Math.floor(GameState.score);
+            GameState.scoreDisplay.innerText = "Score: " + score;
+        }
+
+        if (score >= highScore) {
+            HUD.deltaDisplay.innerText = "NEW HIGH SCORE!";
+            HUD.deltaDisplay.classList.add("new-high");
+        } else {
+            HUD.deltaDisplay.innerText = "To Beat: " + (highScore - score);
+            HUD.deltaDisplay.classList.remove("new-high");
         }
     },
+
 
     showGameOver() {
         if (GameState.fadeOverlay) {
@@ -42,6 +58,12 @@ export const HUD = {
         if (GameState.goScore) {
             GameState.goScore.innerText = "Score: " + Math.floor(GameState.score);
         }
+        const finalScore = Math.floor(GameState.score);
+        if (finalScore > highScore) {
+            highScore = finalScore;
+            localStorage.setItem("cuberush_highscore", highScore);
+        }
+
     },
 
     hideGameOver() {

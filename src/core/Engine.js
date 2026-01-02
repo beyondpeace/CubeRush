@@ -11,6 +11,8 @@ import { CubeSystem } from "../systems/CubeSystem.js";
 import { ScoreSystem } from "../systems/ScoreSystem.js";
 import { GameOverUI } from "../ui/GameOver.js";
 import { resetGrid } from "./Scene.js"; // ✅ ADD THIS
+import { HUD } from "../ui/HUD.js";
+
 
 const INITIAL_CUBE_SPEED = 0.32;
 const FOG_BASE = 0.0006;
@@ -104,6 +106,7 @@ export const Engine = {
     }
 
     ScoreSystem.update();
+    HUD.updateScore(); 
     Engine.updateCameraAndWorld(now, dt);
 
     GameState.renderer?.render(GameState.scene, GameState.camera);
