@@ -21,14 +21,18 @@ export const StartScreen = {
 
         const onKeyDown = (e) => {
             if (e.code !== "Space" || this.holding) return;
+            if (this.el.querySelector(".lb-modal.visible")) return;
             this.holding = true;
             this.holdStartTime = performance.now();
+            this.el.classList.add("holding");
+
         };
 
         const onKeyUp = (e) => {
             if (e.code !== "Space") return;
             this.holding = false;
             this.holdStartTime = 0;
+            this.el.classList.remove("holding");
             fill.style.width = "0%";
         };
 
@@ -71,6 +75,7 @@ export const StartScreen = {
 
     hide() {
         if (!this.el) return;
+        this.el.classList.remove("holding");
 
         this.el.classList.remove("visible");
         setTimeout(() => {

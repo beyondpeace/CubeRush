@@ -1,6 +1,42 @@
 // HUD.js — 100% prototype-accurate UI fade logic
 import { GameState } from "../core/GameState.js";
+
 let highScore = Number(localStorage.getItem("cuberush_highscore")) || 0;
+const LEADERBOARD_KEY = "cuberush_leaderboard";
+const MAX_ENTRIES = 5;
+
+
+function saveLeaderboard(entries) {
+    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(entries));
+}
+
+export function getLeaderboard() {
+    try {
+        return JSON.parse(localStorage.getItem("cuberush_leaderboard")) || [];
+    } catch {
+        return [];
+    }
+}
+
+export function renderLeaderboard(container, highlightScore = null) {
+    const data = getLeaderboard();
+
+    if (!data.length) {
+        container.innerHTML = "<div class='lb-empty'>No scores yet</div>";
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="lb-title">🏆 LEADERBOARD</div>
+        ${data.map((e, i) => `
+            <div class="lb-row ${highlightScore === e.score ? "highlight" : ""}">
+                ${i + 1}. ${e.name} - ${e.score}
+            </div>
+        `).join("")}
+    `;
+}
+
+
 
 export const HUD = {
     
@@ -58,11 +94,44 @@ export const HUD = {
         if (GameState.goScore) {
             GameState.goScore.innerText = "Score: " + Math.floor(GameState.score);
         }
+        // --- GAME OVER LEADERBOARD UI ---
+let lb = GameState.goPanel.querySelector("#gameover-leaderboard");
+
+if (!lb) {
+    lb = document.createElement("div");
+    lb.id = "gameover-leaderboard";
+    lb.style.marginTop = "16px";
+    GameState.goPanel.appendChild(lb);
+}
+
+// Render Top 5 & highlight current score
+renderLeaderboard(lb, Math.floor(GameState.score));
+
         const finalScore = Math.floor(GameState.score);
         if (finalScore > highScore) {
             highScore = finalScore;
             localStorage.setItem("cuberush_highscore", highScore);
         }
+        // --- Leaderboard save ---
+            const playerName =
+                localStorage.getItem("cuberush_player_name") || "RIDER";
+
+            let leaderboard = getLeaderboard();
+
+            leaderboard.push({
+                name: playerName,
+                score: finalScore,
+                date: Date.now()
+            });
+
+            // Sort high → low
+            leaderboard.sort((a, b) => b.score - a.score);
+
+            // Trim to top N
+            leaderboard = leaderboard.slice(0, MAX_ENTRIES);
+
+            saveLeaderboard(leaderboard);
+
 
     },
 

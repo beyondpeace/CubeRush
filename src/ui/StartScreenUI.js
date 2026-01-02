@@ -1,3 +1,6 @@
+import { renderLeaderboard } from "./HUD.js";
+
+
 export function createStartScreenUI() {
     const container = document.createElement("div");
     container.id = "start-screen";
@@ -67,6 +70,17 @@ export function createStartScreenUI() {
             <button id="how-to-play-btn" class="secondary-btn">
                 HOW TO PLAY
             </button>
+            <br><br>
+            <button id="leaderboard-btn" class="secondary-btn">
+                🏆 LEADERBOARD
+            </button>
+            <div id="leaderboardModal" class="lb-modal">
+            <div class="lb-modal-content">
+                <span class="lb-close" id="closeLeaderboard">✕</span>
+                <div id="leaderboardContainer"></div>
+            </div>
+        </div>
+
         </div>
     `;
         const nameText = container.querySelector("#playerNameText");
@@ -116,6 +130,35 @@ editBtn.onclick = () => {
         if (e.key === "Escape") cancel();
     });
 };
+const openBtn = container.querySelector("#leaderboard-btn");
+const modal = container.querySelector("#leaderboardModal");
+const closeBtn = container.querySelector("#closeLeaderboard");
+const lbContainer = container.querySelector("#leaderboardContainer");
+
+openBtn.onclick = () => {
+    modal.classList.add("visible");
+    renderLeaderboard(lbContainer);
+};
+
+closeBtn.onclick = closeLeaderboardModal;
+
+
+// Optional: click outside to close
+modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+       closeLeaderboardModal();
+    }
+});
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal.classList.contains("visible")) {
+        e.preventDefault();
+        closeLeaderboardModal();
+    }
+});
+
+function closeLeaderboardModal() {
+    modal.classList.remove("visible");
+}
 
 
     return container;
