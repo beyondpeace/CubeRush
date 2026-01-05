@@ -53,7 +53,7 @@ export function createStartScreenUI() {
                 <span id="playerNameText"></span>,
                 <span id="editNameBtn">✎</span>
             </div>
-                <div class="hold-instruction">HOLD SPACE TO START</div>
+                <div class="hold-instruction">HOLD SPACE / TOUCH TO START</div>
                 <div class="hold-progress">
                     <div class="hold-progress-fill">
                         <img

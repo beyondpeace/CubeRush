@@ -72,12 +72,14 @@ export const Engine = {
     GameState.lastFrameTime = now;
 
     let dt = delta / 16.666;
-
+    
     // FPS compensation
     const fps = 1000 / delta;
     if (fps < 50) {
       dt *= 50 / fps;
     }
+    // Normalize slow Safari / Mac frames
+    dt = Math.min(dt, 1.25);
 
     if (GameState.gameOver) {
       Engine._loopStarted = false;

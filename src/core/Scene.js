@@ -87,7 +87,7 @@ scene.background = new THREE.Color(0x000000);
 
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   // renderer.setClearColor(0x000000);
-  renderer.setPixelRatio(window.devicePixelRatio || 1);
+  renderer.setPixelRatio(Math.min(1.5, window.devicePixelRatio || 1));
 
   gameContainer.appendChild(renderer.domElement);
 
@@ -95,7 +95,8 @@ scene.background = new THREE.Color(0x000000);
   GameState.camera = camera;
   GameState.renderer = renderer;
   GameState.gameContainer = gameContainer;
-VoidRain.init();
+  if (!VoidRain.active) VoidRain.init();
+
 
   /* ================= LIGHTING ================= */
   scene.add(new THREE.AmbientLight(0x00ffff, 0.3));

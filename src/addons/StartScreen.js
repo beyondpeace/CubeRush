@@ -8,6 +8,10 @@ export const StartScreen = {
     rafId: null,
 
     show({ onStart, onHowToPlay }) {
+        const isTouch =
+        "ontouchstart" in window ||
+        navigator.maxTouchPoints > 0;
+
         if (this.el) return;
 
         this.el = createStartScreenUI();
@@ -35,6 +39,24 @@ export const StartScreen = {
             this.el.classList.remove("holding");
             fill.style.width = "0%";
         };
+        const onTouchStart = () => {
+        if (this.holding) return;
+        this.holding = true;
+        this.holdStartTime = performance.now();
+        this.el.classList.add("holding");
+        };
+
+        const onTouchEnd = () => {
+        this.holding = false;
+        this.holdStartTime = 0;
+        this.el.classList.remove("holding");
+        fill.style.width = "0%";
+        };
+
+        if (isTouch) {
+        this.el.addEventListener("touchstart", onTouchStart);
+        this.el.addEventListener("touchend", onTouchEnd);
+        }
 
         const update = () => {
             if (!this.el) return;
@@ -60,6 +82,9 @@ export const StartScreen = {
         const cleanup = () => {
             window.removeEventListener("keydown", onKeyDown);
             window.removeEventListener("keyup", onKeyUp);
+            this.el?.removeEventListener("touchstart", onTouchStart);
+            this.el?.removeEventListener("touchend", onTouchEnd);
+
             cancelAnimationFrame(this.rafId);
         };
 
