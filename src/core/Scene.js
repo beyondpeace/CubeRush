@@ -5,11 +5,14 @@
  * Feature A: Speed-based grid fade
  * Feature B: Z-direction grid animation
  * Feature C: Lane highlighting
+ * V-2 FINAL: Far Horizon Layer (NO SKY TEXTURES)
  */
 
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 import { GameState } from "./GameState.js";
 import { CubeSystem } from "../systems/CubeSystem.js";
+import { VoidRain } from "../ui/voidrain.js";
+
 import { BikeSystem } from "../systems/BikeSystem.js";
 
 /* ======================================================
@@ -66,6 +69,11 @@ export function initScene() {
   }
 
   const scene = new THREE.Scene();
+
+scene.background = new THREE.Color(0x000000);
+
+
+  // Dark void + fog (sky stays black)
   scene.fog = new THREE.FogExp2(0x000000, 0.0006);
 
   const camera = new THREE.PerspectiveCamera(
@@ -78,7 +86,7 @@ export function initScene() {
   camera.lookAt(0, 1.5, -10);
 
   const renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setClearColor(0x000000);
+  // renderer.setClearColor(0x000000);
   renderer.setPixelRatio(window.devicePixelRatio || 1);
 
   gameContainer.appendChild(renderer.domElement);
@@ -87,7 +95,9 @@ export function initScene() {
   GameState.camera = camera;
   GameState.renderer = renderer;
   GameState.gameContainer = gameContainer;
+VoidRain.init();
 
+  /* ================= LIGHTING ================= */
   scene.add(new THREE.AmbientLight(0x00ffff, 0.3));
 
   const point = new THREE.PointLight(0x00ffff, 1.2, 300);
@@ -160,15 +170,32 @@ export function initScene() {
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = FLOOR_Y;
   scene.add(floor);
-
   GameState.grid = floor;
 
+  /* ================= FAR HORIZON (V-2 FINAL) ================= */
+  const horizon = new THREE.Mesh(
+    new THREE.PlaneGeometry(5000, 1200),
+    new THREE.MeshBasicMaterial({
+      color: 0x00ffaa,
+      transparent: true,
+      opacity: 0.12,
+      depthWrite: false
+    })
+  );
+
+  horizon.position.set(0, 60, -1200);
+  horizon.rotation.x = -Math.PI * 0.02;
+  horizon.renderOrder = -5;
+  scene.add(horizon);
+
+  /* ================= GAME OBJECTS ================= */
   BikeSystem.createBike(scene);
   CubeSystem.initCubes(scene);
 
   window.addEventListener("resize", handleResize);
   handleResize();
 
+  /* ================= RENDER OVERRIDE ================= */
   const originalRender = renderer.render.bind(renderer);
   renderer.render = function (scene, camera) {
     updateGridVisuals();

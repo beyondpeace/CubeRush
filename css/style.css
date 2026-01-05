@@ -710,7 +710,13 @@ canvas {
 #gameover-leaderboard .lb-row {
     font-size: 14px;
 }
-
+/* Background design */
+#void-rain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2; /* below HUD, above game */
+}
 
 /* ===== BIKE INDICATOR ===== */
 
