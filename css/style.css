@@ -715,7 +715,49 @@ canvas {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 2; /* below HUD, above game */
+  z-index: 0; /* below HUD, above game */
+}
+/* Mobile Optimizations */
+#rotate-overlay {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  pointer-events: all;
+}
+
+#rotate-overlay.active {
+  display: flex;
+}
+
+.rotate-inner {
+  text-align: center;
+  color: #00ffd5;
+  font-family: monospace;
+}
+
+.rotate-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  animation: rotateHint 1.5s ease-in-out infinite;
+}
+
+.rotate-text {
+  font-size: 18px;
+  opacity: 0.9;
+}
+
+@keyframes rotateHint {
+  0%   { transform: rotate(0deg); }
+  50%  { transform: rotate(90deg); }
+  100% { transform: rotate(0deg); }
+}
+body {
+  touch-action: none;
+  overscroll-behavior: none;
 }
 
 /* ===== BIKE INDICATOR ===== */

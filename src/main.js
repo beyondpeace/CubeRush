@@ -2,9 +2,12 @@
 import { Splash } from "./ui/Splash.js";
 import { RestartTransition } from "./addons/RestartTransition.js";
 import { HUD } from "./ui/HUD.js";   // ✅ ADD THIS
+import { OrientationOverlay } from "./ui/OrientationOverlay.js";
+
 
 // Start the splash sequence on load
 window.addEventListener("load", () => {
+    OrientationOverlay.init();
     HUD.init();              // ✅ ADD THIS (ONE TIME ONLY)
     Splash.initDOM();
     RestartTransition.init();
