@@ -1,3 +1,6 @@
+import { GameState } from "../core/GameState.js";
+
+
 export const VoidRain = {
   canvas: null,
   ctx: null,
@@ -46,12 +49,16 @@ export const VoidRain = {
       const y = d.y * canvas.height * 0.6;
 
       /* 🟢 STRONG TEAL */
-      ctx.fillStyle = `rgba(0,255,220,${d.alpha})`;
+      const glow = Math.min(0.25, d.alpha + (GameState.cubeSpeed || 0) * 0.08);
+      ctx.fillStyle = `rgba(0,255,200,${glow})`;
+
 
       /* 🔥 THINNER STREAKS */
-      ctx.fillRect(x, y, 1, 18);
+      ctx.fillRect(x, y, 1.5, 18);
 
-      d.y += d.speed * 0.015; // ⬆ smoother motion
+      const speedFactor = Math.min(1.8, 0.8 + (GameState.cubeSpeed || 0) * 1.2);
+        d.y += d.speed * 0.015 * speedFactor;
+
 
       if (d.y * canvas.height > canvas.height * 0.6) {
         d.y = Math.random() * -0.3;

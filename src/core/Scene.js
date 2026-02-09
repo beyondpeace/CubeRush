@@ -70,11 +70,12 @@ export function initScene() {
 
   const scene = new THREE.Scene();
 
-scene.background = new THREE.Color(0x000000);
+  // scene.background = new THREE.Color(0x000000);
 
 
   // Dark void + fog (sky stays black)
-  scene.fog = new THREE.FogExp2(0x000000, 0.0006);
+  // scene.fog = new THREE.FogExp2(0x001010, 0.00025);
+
 
   const camera = new THREE.PerspectiveCamera(
     75,
@@ -85,8 +86,8 @@ scene.background = new THREE.Color(0x000000);
   camera.position.set(0, CAMERA_Y, CAMERA_Z);
   camera.lookAt(0, 1.5, -10);
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
-  // renderer.setClearColor(0x000000);
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha:true });
+  renderer.setClearColor(0x000000,0);
   renderer.setPixelRatio(Math.min(1.5, window.devicePixelRatio || 1));
 
   gameContainer.appendChild(renderer.domElement);
@@ -174,20 +175,68 @@ scene.background = new THREE.Color(0x000000);
   GameState.grid = floor;
 
   /* ================= FAR HORIZON (V-2 FINAL) ================= */
-  const horizon = new THREE.Mesh(
-    new THREE.PlaneGeometry(5000, 1200),
-    new THREE.MeshBasicMaterial({
-      color: 0x00ffaa,
-      transparent: true,
-      opacity: 0.12,
-      depthWrite: false
-    })
-  );
+      const horizon = new THREE.Mesh(
+      new THREE.PlaneGeometry(8000, 800),
+      new THREE.MeshBasicMaterial({
+        color: 0x00ffaa,
+        transparent: true,
+        opacity: 0.08,
+        depthWrite: false,
+        fog: true
+      })
+    );
 
-  horizon.position.set(0, 60, -1200);
-  horizon.rotation.x = -Math.PI * 0.02;
-  horizon.renderOrder = -5;
-  scene.add(horizon);
+    horizon.position.set(0, 120, -2200);
+    horizon.rotation.x = -Math.PI * 0.015;
+    horizon.renderOrder = -10;
+
+    scene.add(horizon);
+    createVoidHills(scene);
+
+
+    function createVoidHills(scene) {
+  const layers = [
+    { z: -900,  y: 120, opacity: 0.25 },
+    { z: -1100, y: 150, opacity: 0.20 },
+    { z: -1300, y: 180, opacity: 0.15 }
+  ];
+
+  layers.forEach((l, i) => {
+    const geo = new THREE.PlaneGeometry(9000, 800, 64, 1);
+
+    const mat = new THREE.MeshBasicMaterial({
+  color: 0xff0000,
+  transparent: true,
+  opacity: 0.35,
+  depthWrite: false,
+  side: THREE.DoubleSide
+});
+
+
+    const mesh = new THREE.Mesh(geo, mat);
+
+    // silhouette shaping
+    const pos = geo.attributes.position;
+    for (let j = 0; j < pos.count; j++) {
+      const x = pos.getX(j);
+      const h = Math.sin(x * 0.0008 + i) * 120;
+      pos.setY(j, h);
+    }
+    pos.needsUpdate = true;
+    // 🔥 REQUIRED: update bounds so Three.js doesn't cull the hills
+    geo.computeBoundingSphere();
+    geo.computeBoundingBox();
+    mesh.position.set(0, 40 + i * 30, l.z);
+    mesh.rotation.x = -Math.PI / 2 + 0.25;
+    mesh.renderOrder = -50 - i;
+    mesh.frustumCulled = false;
+
+
+    scene.add(mesh);
+  });
+}
+
+
 
   /* ================= GAME OBJECTS ================= */
   BikeSystem.createBike(scene);

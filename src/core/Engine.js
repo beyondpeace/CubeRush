@@ -12,6 +12,9 @@ import { ScoreSystem } from "../systems/ScoreSystem.js";
 import { GameOverUI } from "../ui/GameOver.js";
 import { resetGrid } from "./Scene.js"; // ✅ ADD THIS
 import { HUD } from "../ui/HUD.js";
+import { AudioManager } from "./AudioManager.js";
+
+const audioManager = new AudioManager();
 
 
 const INITIAL_CUBE_SPEED = 0.32;
@@ -59,6 +62,8 @@ export const Engine = {
     }
 
     GameState.gameOver = false;
+    // 🎵 Start background music on gameplay start
+      audioManager.startMusic();
     this._rafId = requestAnimationFrame(this.animate);
   },
 
@@ -98,6 +103,8 @@ export const Engine = {
       GameState.gameOver = true;
       GameState.cubeSpeed = 0;
       GameOverUI.trigger();
+       // 🎵 Stop music on game over
+        audioManager.stopMusic();
 
       Engine._loopStarted = false;
       if (Engine._rafId) {
